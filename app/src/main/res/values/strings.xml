@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="action_setting">Settings</string>
+
+
+    <string name="pref_title_popularity">Popularity</string>
+    <string name="pref_value_popularity" translatable="false">popularity</string>
+    <string name="pref_title_highest_rating">Highest rating</string>
+    <string name="pref_value_highest_rating" translatable="false">highest_rating</string>
+    <string name="pref_title_sorting">Sorting type</string>
+    <string name="pref_title_dialog_sorting">Please choose a sorting type:</string>
 </resources>
