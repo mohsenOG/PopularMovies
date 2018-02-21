@@ -34,7 +34,7 @@ public class Utils {
     public static boolean isOnline(Context context) {
         ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
-        return info != null && info.isConnectedOrConnecting();
+        return info != null && info.isConnected();
     }
 
     public static String getQueryURL() {

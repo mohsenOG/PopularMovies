@@ -1,8 +1,6 @@
 package com.mohsen.popularmovies;
 
-import android.content.ClipData;
 import android.content.Context;
-import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +9,7 @@ import android.widget.ImageView;
 
 /**
  * Created by Mohsen on 20.02.2018.
+ *
  */
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
