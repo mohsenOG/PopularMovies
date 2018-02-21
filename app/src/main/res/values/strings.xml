@@ -9,4 +9,7 @@
     <string name="pref_value_highest_rating" translatable="false">highest_rating</string>
     <string name="pref_title_sorting">Sorting type</string>
     <string name="pref_title_dialog_sorting">Please choose a sorting type:</string>
+
+    <string name="poster_default_description">Default poster</string>
+    <string name="no_internet">There is no internet connection.</string>
 </resources>
