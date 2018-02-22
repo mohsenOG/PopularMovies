@@ -2,11 +2,19 @@
     <string name="app_name">Popular Movies</string>
     <string name="action_setting">Settings</string>
 
+    <string name="moviedb_api_key" translatable="false">Insert your movieDB key here</string>
 
+
+    <string name="api_key_title" translatable="false">api_key</string>
+    <string name="api_param_language" translatable="false">language</string>
+    <string name="api_param_language_value">en-US</string>
+
+
+    <string name="pref_key_sorting" translatable="false">pref_key_sorting</string>
     <string name="pref_title_popularity">Popularity</string>
-    <string name="pref_value_popularity" translatable="false">popularity</string>
+    <string name="pref_value_popularity" translatable="false">popular</string>
     <string name="pref_title_highest_rating">Highest rating</string>
-    <string name="pref_value_highest_rating" translatable="false">highest_rating</string>
+    <string name="pref_value_highest_rating" translatable="false">top_rated</string>
     <string name="pref_title_sorting">Sorting type</string>
     <string name="pref_title_dialog_sorting">Please choose a sorting type:</string>
 

@@ -4,7 +4,7 @@
 
     <ListPreference
         android:title="@string/pref_title_sorting"
-        android:key="listPrefSorting"
+        android:key="@string/pref_key_sorting"
         android:defaultValue="@string/pref_value_popularity"
         android:dialogTitle="@string/pref_title_dialog_sorting"
         android:entries="@array/sort_items"

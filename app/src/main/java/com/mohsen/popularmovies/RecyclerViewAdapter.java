@@ -7,6 +7,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.mohsen.popularmovies.common.Utils;
+import com.mohsen.popularmovies.model.MovieInfo;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Mohsen on 20.02.2018.
  *
@@ -14,29 +21,32 @@ import android.widget.ImageView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
+    private Context mContext;
     private LayoutInflater mLayoutInflater;
     private ItemClickListener mItemClickListener;
+    private List<String> mMoviesposterRelativePath = new ArrayList<>();
 
-    //TODO Add data to constructor as well if needed.
-    public RecyclerViewAdapter(Context context) {
+    public RecyclerViewAdapter(Context context, List<String> moviesPosterRelPath) {
+        mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
+        mMoviesposterRelativePath = moviesPosterRelPath;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.recyclerview_item, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(mContext, view);
     }
 
     // Bind data to each view holder.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        //TODO Add movie poster here to the view holder.
+        holder.bindingImages(mMoviesposterRelativePath.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return mMoviesposterRelativePath.size();
     }
 
     public interface ItemClickListener {
@@ -47,13 +57,23 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mItemClickListener = itemClickListener;
     }
 
+    public void swapData(List<String> newData) {
+        if (newData == null || newData.size() == 0)
+            return;
+        mMoviesposterRelativePath.clear();
+        mMoviesposterRelativePath.addAll(newData);
+        notifyDataSetChanged();
+    }
+
 
 
     class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener{
         ImageView mImageView;
+        Context mContext;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(Context context, View itemView) {
             super(itemView);
+            mContext = context;
             mImageView = itemView.findViewById(R.id.poster_image_view);
             itemView.setOnClickListener(this);
         }
@@ -62,6 +82,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         public void onClick(View v) {
             if(mItemClickListener != null)
                 mItemClickListener.onItemClick(v, getAdapterPosition());
+        }
+
+        public void bindingImages(String imageRelPath)
+        {
+            String absPath = MovieInfo.posterPathConverter(imageRelPath);
+            Picasso.with(mContext).load(absPath).into(mImageView);
         }
     }
 }
