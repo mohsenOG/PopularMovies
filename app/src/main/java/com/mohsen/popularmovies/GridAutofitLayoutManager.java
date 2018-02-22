@@ -17,17 +17,14 @@ public class GridAutofitLayoutManager extends GridLayoutManager {
         super(context, 1);
         setColumnWidth(checkedColumnWidth(context, columnWidth));
     }
-    public GridAutofitLayoutManager(Context context, int columnWidth, int orientation, boolean reverseLayout) { /* Initially set spanCount to 1, will be changed automatically later. */
-        super(context, 1, orientation, reverseLayout);
-        setColumnWidth(checkedColumnWidth(context, columnWidth));
-    }
+
     private int checkedColumnWidth(Context context, int columnWidth) {
         if (columnWidth <= 0) { /* Set default columnWidth value (48dp here). It is better to move this constant to static constant on top, but we need context to convert it to dp, so can't really do so. */
             columnWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, context.getResources().getDisplayMetrics());
         }
         return columnWidth;
     }
-    public void setColumnWidth(int newColumnWidth) {
+    private void setColumnWidth(int newColumnWidth) {
         if (newColumnWidth > 0 && newColumnWidth != mColumnWidth) {
             mColumnWidth = newColumnWidth;
             mColumnWidthChanged = true;

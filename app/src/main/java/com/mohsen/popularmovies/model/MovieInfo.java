@@ -1,7 +1,5 @@
 package com.mohsen.popularmovies.model;
 
-import android.graphics.Movie;
-
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -15,19 +13,19 @@ public class MovieInfo {
     private static final String POSTER_SIZE = "w185";
 
     @SerializedName("id")
-    private String id;
+    private final String id;
     @SerializedName("title")
-    private String title;
+    private final String title;
     @SerializedName("original_title")
-    private String originalTitle;
+    private final String originalTitle;
     @SerializedName("poster_path")
-    private String posterRelativePath;
+    private final String posterRelativePath;
     @SerializedName("overview")
-    private String overview;
+    private final String overview;
     @SerializedName("vote_average")
-    private String voteAverage;
+    private final String voteAverage;
     @SerializedName("release_date")
-    private String releaseDate;
+    private final String releaseDate;
 
     public MovieInfo(String id, String title, String originalTitle, String posterRelativePath, String overview, String voteAverage, String releaseDate) {
         this.id = id;

@@ -12,18 +12,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.mohsen.popularmovies.common.Utils;
 import com.mohsen.popularmovies.model.MovieApi;
+import com.mohsen.popularmovies.model.MovieInfo;
 import com.mohsen.popularmovies.model.MovieQueryResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,15 +33,23 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, RecyclerViewAdapter.ItemClickListener
 {
 
+    public static final String TITLE_BUNDLE_EXTRA          = "TITLE_BUNDLE_EXTRA";
+    public static final String ORIGINAL_TITLE_BUNDLE_EXTRA = "ORIGINAL_TITLE_BUNDLE_EXTRA";
+    public static final String POSTER_PATH_BUNDLE_EXTRA    = "POSTER_PATH_BUNDLE_EXTRA";
+    public static final String OVERVIEW_BUNDLE_EXTRA       = "OVERVIEW_BUNDLE_EXTRA";
+    public static final String VOTE_AVERAGE_BUNDLE_EXTRA   = "VOTE_AVERAGE_BUNDLE_EXTRA";
+    public static final String RELEASE_DATE_BUNDLE_EXTRA   = "RELEASE_DATE_BUNDLE_EXTRA";
+
     private SharedPreferences mSharedPreferences;
     private RecyclerViewAdapter mAdapter;
-    RecyclerView mRecyclerView;
+    private RecyclerView mRecyclerView;
     private TextView mErrorTextView;
     private ProgressBar mLoadingIndicator;
+    private MovieQueryResult mResult = null;
     private List<String> mPosterRelativePath;
-
     private String mQueryType;
     private Map<String, String> mQueryParams = null;
+    private Button mRetryButton;
 
 
     @Override
@@ -51,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mErrorTextView = findViewById(R.id.tv_error_msg_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
         mRecyclerView = findViewById(R.id.rv_posters);
+        mRetryButton = findViewById(R.id.btn_search_again);
+
 
         mPosterRelativePath = new ArrayList<>();
 
@@ -65,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             showHideErrorMassage(getString(R.string.no_internet), true);
         }
 
-        // Qeury data from MovieDB
+        // Query data from MovieDB
         queryData();
         // Initiate the recycler view.
         initRecyclerView();
@@ -110,28 +121,61 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
-    public void onItemClick(View view, int position) {
-        //TODO Goto the detail activity.
+    public void onItemClick(String posterRelPath) {
+        //Find the MovieInfo object based on poster relative path.
+        MovieInfo info = mResult.getMovieInfo(posterRelPath);
+        if (info == null) return;
+        Bundle bundle = new Bundle();
+        //title
+        String title = info.getTitle();
+        if (title != null)
+            bundle.putString(TITLE_BUNDLE_EXTRA, title);
+        // Original title
+        String originalTitle = info.getOriginalTitle();
+        if (originalTitle != null)
+            bundle.putString(ORIGINAL_TITLE_BUNDLE_EXTRA, originalTitle);
+        // Movie Poster rel Path
+        bundle.putString(POSTER_PATH_BUNDLE_EXTRA, posterRelPath);
+        // Overview
+        String overview = info.getOverview();
+        if (overview != null)
+            bundle.putString(OVERVIEW_BUNDLE_EXTRA, overview);
+        // Vote Average
+        String voteAverage = info.getVoteAverage();
+        if (voteAverage != null)
+            bundle.putString(VOTE_AVERAGE_BUNDLE_EXTRA, voteAverage);
+        // Release date
+        String releaseDate = info.getReleaseDate();
+        if (releaseDate != null)
+            bundle.putString(RELEASE_DATE_BUNDLE_EXTRA, releaseDate);
+        Intent intent = new Intent(this, DetailsActivity.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+
     }
 
     // Show true, hide false
-    void showHideErrorMassage(String msg, boolean show) {
+    private void showHideErrorMassage(String msg, boolean show) {
         if (show) {
             mRecyclerView.setVisibility(View.INVISIBLE);
             mLoadingIndicator.setVisibility(View.INVISIBLE);
+            mRetryButton.setVisibility(View.VISIBLE);
             mErrorTextView.setVisibility(View.VISIBLE);
             mErrorTextView.setText(msg);
         } else {
             mRecyclerView.setVisibility(View.VISIBLE);
+            mRetryButton.setVisibility(View.INVISIBLE);
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             mErrorTextView.setVisibility(View.INVISIBLE);
         }
     }
 
-    void queryData() {
+    private void queryData() {
         mLoadingIndicator.setVisibility(View.VISIBLE);
+        mRetryButton.setVisibility(View.INVISIBLE);
         if (mQueryParams == null)
             mQueryParams = new HashMap<>();
+        mQueryParams.clear();
         mQueryParams.put(getString(R.string.api_key_title), getString(R.string.moviedb_api_key));
         mQueryParams.put(getString(R.string.api_param_language), getString(R.string.api_param_language_value));
         MovieApi movieApi = MovieApi.retrofit.create(MovieApi.class);
@@ -139,11 +183,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         call.enqueue(new Callback<MovieQueryResult>() {
             @Override
             public void onResponse(@NonNull Call<MovieQueryResult> call, @NonNull Response<MovieQueryResult> response) {
-                MovieQueryResult result = response.body();
-                if (result == null) return;
-                mPosterRelativePath = result.getPosterRelativePaths();
+                mResult = response.body();
+                if (mResult == null) return;
+                mPosterRelativePath = mResult.getPosterRelativePaths();
                 mAdapter.swapData(mPosterRelativePath);
-                mLoadingIndicator.setVisibility(View.INVISIBLE);
+                showHideErrorMassage(null, false);
             }
 
             @Override
@@ -153,12 +197,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         });
     }
 
-    void initRecyclerView() {
+    private void initRecyclerView() {
         GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 250);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new RecyclerViewAdapter(this, mPosterRelativePath);
+        mAdapter.setItemClickListener(this);
         mRecyclerView.setAdapter(mAdapter);
     }
 
 
+    public void onRetryButtonClicked(View view) {
+        if (view.getId() == R.id.btn_search_again) {
+            queryData();
+        }
+    }
 }

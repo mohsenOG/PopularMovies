@@ -7,18 +7,19 @@ import java.util.List;
 
 /**
  * Created by Mohsen on 22.02.2018.
+ *
  */
 
 public class MovieQueryResult {
 
     @SerializedName("page")
-    private String page;
+    private final String page;
     @SerializedName("total_result")
-    private String totalResult;
+    private final String totalResult;
     @SerializedName("total_pages")
-    private String totalPages;
+    private final String totalPages;
     @SerializedName("results")
-    private List<MovieInfo> results;
+    private final List<MovieInfo> results;
 
     public MovieQueryResult(String page, String totalResult, String totalPages, List<MovieInfo> results) {
         this.page = page;
@@ -35,4 +36,17 @@ public class MovieQueryResult {
         return paths;
     }
 
+    public MovieInfo getMovieInfo(String posterRelativePath) {
+        for (MovieInfo info : results) {
+            if (info.getPosterRelativePath().equals(posterRelativePath))
+                return info;
+        }
+        return null;
+    }
+
+    public String getPage() { return page; }
+
+    public String getTotalResult() { return totalResult; }
+
+    public String getTotalPages() { return totalPages; }
 }

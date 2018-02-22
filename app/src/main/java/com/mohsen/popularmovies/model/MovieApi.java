@@ -21,7 +21,7 @@ public interface MovieApi {
     @GET("/3/movie/{queryType}")
     Call<MovieQueryResult> getMovies(@Path("queryType") String queryType, @QueryMap Map<String, String> options);
 
-    public static final Retrofit retrofit = new Retrofit.Builder()
+    Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
