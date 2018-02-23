@@ -35,12 +35,7 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, RecyclerViewAdapter.ItemClickListener
 {
 
-    public static final String TITLE_BUNDLE_EXTRA          = "TITLE_BUNDLE_EXTRA";
-    public static final String ORIGINAL_TITLE_BUNDLE_EXTRA = "ORIGINAL_TITLE_BUNDLE_EXTRA";
-    public static final String POSTER_PATH_BUNDLE_EXTRA    = "POSTER_PATH_BUNDLE_EXTRA";
-    public static final String OVERVIEW_BUNDLE_EXTRA       = "OVERVIEW_BUNDLE_EXTRA";
-    public static final String VOTE_AVERAGE_BUNDLE_EXTRA   = "VOTE_AVERAGE_BUNDLE_EXTRA";
-    public static final String RELEASE_DATE_BUNDLE_EXTRA   = "RELEASE_DATE_BUNDLE_EXTRA";
+    public static final String MOVIE_INFO_EXTRA = "MOVIE_INFO_EXTRA";
 
     private SharedPreferences mSharedPreferences;
     private RecyclerViewAdapter mAdapter;
@@ -62,21 +57,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         mPosterRelativePath = new ArrayList<>();
         // Set the preferences to default for each cold start of app.
-        //PreferenceManager.setDefaultValues(this, R.xml.pref_popular_movies, true);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mQueryType = mSharedPreferences.getString(getString(R.string.pref_key_sorting), getString(R.string.pref_value_popularity));
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         // Check if there is internet connection.
-        if (!Utils.isOnline(this)) {
+        if (!Utils.isOnline(this))
             showHideErrorMassage(getString(R.string.no_internet), true);
-        }
-
         // Query data from MovieDB
         queryData();
         // Initiate the recycler view.
         initRecyclerView();
-
     }
 
     @Override
@@ -96,10 +87,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         } else if (id == android.R.id.home) {
             NavUtils.navigateUpFromSameTask(this);
         }
-
         return super.onOptionsItemSelected(item);
     }
-
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -121,33 +110,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         //Find the MovieInfo object based on poster relative path.
         MovieInfo info = mResult.getMovieInfo(posterRelPath);
         if (info == null) return;
-        Bundle bundle = new Bundle();
-        //title
-        String title = info.getTitle();
-        if (title != null)
-            bundle.putString(TITLE_BUNDLE_EXTRA, title);
-        // Original title
-        String originalTitle = info.getOriginalTitle();
-        if (originalTitle != null)
-            bundle.putString(ORIGINAL_TITLE_BUNDLE_EXTRA, originalTitle);
-        // Movie Poster rel Path
-        bundle.putString(POSTER_PATH_BUNDLE_EXTRA, posterRelPath);
-        // Overview
-        String overview = info.getOverview();
-        if (overview != null)
-            bundle.putString(OVERVIEW_BUNDLE_EXTRA, overview);
-        // Vote Average
-        String voteAverage = info.getVoteAverage();
-        if (voteAverage != null)
-            bundle.putString(VOTE_AVERAGE_BUNDLE_EXTRA, voteAverage);
-        // Release date
-        String releaseDate = info.getReleaseDate();
-        if (releaseDate != null)
-            bundle.putString(RELEASE_DATE_BUNDLE_EXTRA, releaseDate);
         Intent intent = new Intent(this, DetailsActivity.class);
-        intent.putExtras(bundle);
+        intent.putExtra(MOVIE_INFO_EXTRA, info);
         startActivity(intent);
-
     }
 
     // Show true, hide false

@@ -3,6 +3,7 @@ package com.mohsen.popularmovies.common;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.DisplayMetrics;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +18,18 @@ import java.util.Locale;
 public class Utils {
 
     private Utils() {}
+
+    /**
+     *
+     * @param context -
+     * @return number of needed columns for the recycler view based on device display.
+     * @see https://stackoverflow.com/a/38472370/6072457
+     */
+    public static int numberOfRecyclerViewColumns(Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        float dpWidth = metrics.widthPixels / metrics.density;
+        return (int)(dpWidth / 180);
+    }
 
     /**
      *

@@ -1,5 +1,8 @@
 package com.mohsen.popularmovies.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -7,7 +10,7 @@ import com.google.gson.annotations.SerializedName;
  *
  */
 
-public class MovieInfo {
+public class MovieInfo implements Parcelable {
 
     private static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String POSTER_SIZE = "w185";
@@ -60,4 +63,41 @@ public class MovieInfo {
         return POSTER_BASE_URL + POSTER_SIZE + relativePath;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.title);
+        dest.writeString(this.originalTitle);
+        dest.writeString(this.posterRelativePath);
+        dest.writeString(this.overview);
+        dest.writeString(this.voteAverage);
+        dest.writeString(this.releaseDate);
+    }
+
+    protected MovieInfo(Parcel in) {
+        this.id = in.readString();
+        this.title = in.readString();
+        this.originalTitle = in.readString();
+        this.posterRelativePath = in.readString();
+        this.overview = in.readString();
+        this.voteAverage = in.readString();
+        this.releaseDate = in.readString();
+    }
+
+    public static final Parcelable.Creator<MovieInfo> CREATOR = new Parcelable.Creator<MovieInfo>() {
+        @Override
+        public MovieInfo createFromParcel(Parcel source) {
+            return new MovieInfo(source);
+        }
+
+        @Override
+        public MovieInfo[] newArray(int size) {
+            return new MovieInfo[size];
+        }
+    };
 }

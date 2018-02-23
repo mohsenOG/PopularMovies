@@ -38,29 +38,28 @@ public class DetailsActivity extends AppCompatActivity {
    }
 
     private void initViews() {
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            String title = extras.getString(TITLE_BUNDLE_EXTRA);
-            if (title != null && !title.isEmpty())
-                this.setTitle(title);
-            String originalTitle = extras.getString(ORIGINAL_TITLE_BUNDLE_EXTRA);
-            if (originalTitle != null)
-                originalTitleTextView.setText(originalTitle);
-            String posterPath = extras.getString(POSTER_PATH_BUNDLE_EXTRA);
-            if (posterPath != null)
-                Picasso.with(this).load(MovieInfo.posterPathConverter(posterPath)).into(posterImageView);
-            String overview = extras.getString(OVERVIEW_BUNDLE_EXTRA);
-            if (overview != null)
-                overviewTextView.setText(overview);
-            String voteAverage = extras.getString(VOTE_AVERAGE_BUNDLE_EXTRA);
-            if (voteAverage != null)
-                voteAverageTextView.setText(voteAverage);
-            String releaseDate = extras.getString(RELEASE_DATE_BUNDLE_EXTRA);
-            if (releaseDate != null) {
-                String releaseDateFormatted = Utils.timeConverter(releaseDate);
-                if (releaseDateFormatted != null)
-                    releaseDateTextView.setText(releaseDateFormatted);
-            }
+        MovieInfo info = getIntent().getParcelableExtra(MOVIE_INFO_EXTRA);
+        if (info == null) return;
+        String title = info.getTitle();
+        if (title != null && !title.isEmpty())
+            this.setTitle(title);
+        String originalTitle = info.getOriginalTitle();
+        if (originalTitle != null)
+            originalTitleTextView.setText(originalTitle);
+        String posterPath = info.getPosterRelativePath();
+        if (posterPath != null)
+            Picasso.with(this).load(MovieInfo.posterPathConverter(posterPath)).into(posterImageView);
+        String overview = info.getOverview();
+        if (overview != null)
+            overviewTextView.setText(overview);
+        String voteAverage = info.getVoteAverage();
+        if (voteAverage != null)
+            voteAverageTextView.setText(voteAverage);
+        String releaseDate = info.getReleaseDate();
+        if (releaseDate != null) {
+            String releaseDateFormatted = Utils.timeConverter(releaseDate);
+            if (releaseDateFormatted != null)
+                releaseDateTextView.setText(releaseDateFormatted);
         }
     }
 }
