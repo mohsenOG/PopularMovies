@@ -10,25 +10,34 @@ import com.mohsen.popularmovies.common.Utils;
 import com.mohsen.popularmovies.model.MovieInfo;
 import com.squareup.picasso.Picasso;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import static com.mohsen.popularmovies.MainActivity.*;
 
 public class DetailsActivity extends AppCompatActivity {
+
+    @BindView(R.id.iv_poster) ImageView posterImageView;
+    @BindView(R.id.tv_original_title) TextView originalTitleTextView;
+    @BindView(R.id.tv_vote_average) TextView voteAverageTextView;
+    @BindView(R.id.tv_release_date) TextView releaseDateTextView;
+    @BindView(R.id.tv_overview) TextView overviewTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+        ButterKnife.bind(this);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
             actionBar.setDisplayHomeAsUpEnabled(true);
 
-        ImageView posterImageView = findViewById(R.id.iv_poster);
-        TextView originalTitleTextView = findViewById(R.id.tv_original_title);
-        TextView voteAverageTextView = findViewById(R.id.tv_vote_average);
-        TextView releaseDateTextView = findViewById(R.id.tv_release_date);
-        TextView overviewTextView = findViewById(R.id.tv_overview);
+        initViews();
 
+   }
+
+    private void initViews() {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String title = extras.getString(TITLE_BUNDLE_EXTRA);

@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -42,29 +44,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private SharedPreferences mSharedPreferences;
     private RecyclerViewAdapter mAdapter;
-    private RecyclerView mRecyclerView;
-    private TextView mErrorTextView;
-    private ProgressBar mLoadingIndicator;
+    @BindView(R.id.rv_posters) RecyclerView mRecyclerView;
+    @BindView(R.id.tv_error_msg_display) TextView mErrorTextView;
+    @BindView(R.id.pb_loading_indicator) ProgressBar mLoadingIndicator;
+    @BindView(R.id.btn_search_again) Button mRetryButton;
     private MovieQueryResult mResult = null;
     private List<String> mPosterRelativePath;
     private String mQueryType;
     private Map<String, String> mQueryParams = null;
-    private Button mRetryButton;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mErrorTextView = findViewById(R.id.tv_error_msg_display);
-        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
-        mRecyclerView = findViewById(R.id.rv_posters);
-        mRetryButton = findViewById(R.id.btn_search_again);
-
+        ButterKnife.bind(this);
 
         mPosterRelativePath = new ArrayList<>();
-
         // Set the preferences to default for each cold start of app.
         //PreferenceManager.setDefaultValues(this, R.xml.pref_popular_movies, true);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
