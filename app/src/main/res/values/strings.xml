@@ -2,10 +2,6 @@
     <string name="app_name">Popular Movies</string>
     <string name="action_setting">Settings</string>
 
-    <!-- Please add your movieDB key here -->
-    <string name="moviedb_api_key" translatable="false">Insert your movieDB key here</string>
-
-
     <string name="api_key_title" translatable="false">api_key</string>
     <string name="api_param_language" translatable="false">language</string>
     <string name="api_param_language_value">en-US</string>

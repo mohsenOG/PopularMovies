@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (mQueryParams == null)
             mQueryParams = new HashMap<>();
         mQueryParams.clear();
-        mQueryParams.put(getString(R.string.api_key_title), getString(R.string.moviedb_api_key));
+        mQueryParams.put(getString(R.string.api_key_title), BuildConfig.API_KEY);
         mQueryParams.put(getString(R.string.api_param_language), getString(R.string.api_param_language_value));
         MovieApi movieApi = MovieApi.retrofit.create(MovieApi.class);
         Call<MovieQueryResult> call = movieApi.getMovies(mQueryType, mQueryParams);
@@ -198,13 +198,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void initRecyclerView() {
-        GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 250);
+        GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 360);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new RecyclerViewAdapter(this, mPosterRelativePath);
         mAdapter.setItemClickListener(this);
         mRecyclerView.setAdapter(mAdapter);
     }
-
 
     public void onRetryButtonClicked(View view) {
         if (view.getId() == R.id.btn_search_again) {
