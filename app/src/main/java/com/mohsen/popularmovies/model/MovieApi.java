@@ -19,7 +19,11 @@ public interface MovieApi {
     String BASE_URL = "https://api.themoviedb.org";
 
     @GET("/3/movie/{queryType}")
-    Call<MovieQueryResult> getMovies(@Path("queryType") String queryType, @QueryMap Map<String, String> options);
+    Call<MovieInfoQueryResult> getMovies(@Path("queryType") String queryType, @QueryMap Map<String, String> options);
+
+    @GET("/3/movie/{videoId}")
+    Call<MovieDetails> getMovieDetails(@Path("videoId") String videoId, @QueryMap Map<String, String> options);
+
 
     Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(BASE_URL)

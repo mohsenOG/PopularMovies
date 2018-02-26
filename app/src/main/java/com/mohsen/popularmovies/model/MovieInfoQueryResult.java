@@ -10,7 +10,7 @@ import java.util.List;
  *
  */
 
-public class MovieQueryResult {
+public class MovieInfoQueryResult {
 
     @SerializedName("page")
     private final String page;
@@ -21,7 +21,7 @@ public class MovieQueryResult {
     @SerializedName("results")
     private final List<MovieInfo> results;
 
-    public MovieQueryResult(String page, String totalResult, String totalPages, List<MovieInfo> results) {
+    public MovieInfoQueryResult(String page, String totalResult, String totalPages, List<MovieInfo> results) {
         this.page = page;
         this.totalResult = totalResult;
         this.totalPages = totalPages;

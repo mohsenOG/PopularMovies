@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.mohsen.popularmovies.common.Utils;
 import com.mohsen.popularmovies.model.MovieApi;
 import com.mohsen.popularmovies.model.MovieInfo;
-import com.mohsen.popularmovies.model.MovieQueryResult;
+import com.mohsen.popularmovies.model.MovieInfoQueryResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +43,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @BindView(R.id.tv_error_msg_display) TextView mErrorTextView;
     @BindView(R.id.pb_loading_indicator) ProgressBar mLoadingIndicator;
     @BindView(R.id.btn_search_again) Button mRetryButton;
-    private MovieQueryResult mResult = null;
+    private MovieInfoQueryResult mResult = null;
     private List<String> mPosterRelativePath;
     private String mQueryType;
-    private Map<String, String> mQueryParams = null;
 
 
     @Override
@@ -134,16 +133,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void queryData() {
         mLoadingIndicator.setVisibility(View.VISIBLE);
         mRetryButton.setVisibility(View.INVISIBLE);
-        if (mQueryParams == null)
-            mQueryParams = new HashMap<>();
-        mQueryParams.clear();
-        mQueryParams.put(getString(R.string.api_key_title), BuildConfig.API_KEY);
-        mQueryParams.put(getString(R.string.api_param_language), getString(R.string.api_param_language_value));
+        Map<String, String> queryParams = new HashMap<>();
+        queryParams.put(getString(R.string.api_key_title), BuildConfig.API_KEY);
+        queryParams.put(getString(R.string.api_param_language), getString(R.string.api_param_language_value));
         MovieApi movieApi = MovieApi.retrofit.create(MovieApi.class);
-        Call<MovieQueryResult> call = movieApi.getMovies(mQueryType, mQueryParams);
-        call.enqueue(new Callback<MovieQueryResult>() {
+        Call<MovieInfoQueryResult> call = movieApi.getMovies(mQueryType, queryParams);
+        call.enqueue(new Callback<MovieInfoQueryResult>() {
             @Override
-            public void onResponse(@NonNull Call<MovieQueryResult> call, @NonNull Response<MovieQueryResult> response) {
+            public void onResponse(@NonNull Call<MovieInfoQueryResult> call, @NonNull Response<MovieInfoQueryResult> response) {
                 mResult = response.body();
                 if (mResult == null) return;
                 mPosterRelativePath = mResult.getPosterRelativePaths();
@@ -152,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             }
 
             @Override
-            public void onFailure(@NonNull Call<MovieQueryResult> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<MovieInfoQueryResult> call, @NonNull Throwable t) {
                 showHideErrorMassage(t.getMessage(), true);
             }
         });
