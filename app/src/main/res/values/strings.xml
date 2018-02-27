@@ -31,4 +31,5 @@
     <string name="tbtn_favorite_description">Favorite button</string>
     <string name="detail_overview">Overview</string>
     <string name="detail_reviews">Reviews</string>
+    <string name="detail_trailers">Trailers</string>
 </resources>

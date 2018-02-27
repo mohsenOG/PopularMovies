@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     private void initRecyclerView() {
-        GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 360);
+        GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 400);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new RecyclerViewAdapter(this, mPosterRelativePath);
         mAdapter.setItemClickListener(this);

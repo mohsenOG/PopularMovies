@@ -1,5 +1,8 @@
 package com.mohsen.popularmovies;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -8,19 +11,24 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.mohsen.popularmovies.common.ExpandableTextView;
+import com.mohsen.popularmovies.common.TrailerButton;
 import com.mohsen.popularmovies.common.Utils;
 import com.mohsen.popularmovies.model.MovieApi;
 import com.mohsen.popularmovies.model.MovieDetails;
 import com.mohsen.popularmovies.model.MovieInfo;
 import com.mohsen.popularmovies.model.MovieReviewsQueryResult;
+import com.mohsen.popularmovies.model.MovieVideo;
+import com.mohsen.popularmovies.model.MovieVideosQueryResult;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -44,6 +52,7 @@ public class DetailsActivity extends AppCompatActivity {
     @BindView(R.id.pb_loading_indicator) ProgressBar mLoadingIndicator;
     @BindView(R.id.tv_error_msg_display) TextView mErrorTextView;
     @BindView(R.id.cl_parent) View mParentView;
+    @BindView(R.id.ll_trailer_parent) LinearLayout mTrailerLayout;
 
 
 
@@ -67,6 +76,8 @@ public class DetailsActivity extends AppCompatActivity {
     private void initViews() {
         // Favorite button
         mFavButton.setChecked(false);
+        mParentView.setVisibility(View.INVISIBLE);
+        mLoadingIndicator.setVisibility(View.VISIBLE);
         mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
         mFavButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -122,8 +133,10 @@ public class DetailsActivity extends AppCompatActivity {
                 String reviews = null;
                 if (reviewsList != null)
                     reviews = MovieReviewsQueryResult.ReviewConverter(reviewsList);
+                List<MovieVideo> trailers = result.getVideos().getResult();
 
-                fillViews(title, originalTitle, posterPath, overview, voteAverage, releaseDate, reviews);
+
+                fillViews(title, originalTitle, posterPath, overview, voteAverage, releaseDate, reviews, trailers);
             }
 
 
@@ -150,7 +163,7 @@ public class DetailsActivity extends AppCompatActivity {
     private void fillViews(@Nullable String title, @Nullable String originalTitle,
                            @Nullable String posterPath, @Nullable String overview,
                            @Nullable String voteAverage, @Nullable String releaseDate,
-                           @Nullable String reviews) {
+                           @Nullable String reviews, @Nullable List<MovieVideo> videos) {
         if (title != null && !title.isEmpty())
             DetailsActivity.this.setTitle(title);
         if (originalTitle != null)
@@ -168,6 +181,32 @@ public class DetailsActivity extends AppCompatActivity {
         }
         if (reviews != null) {
             mReviewTextView.setText(reviews);
+        }
+        if (videos != null && !videos.isEmpty()) {
+            mTrailerLayout.removeAllViews();
+            for (final MovieVideo video : videos) {
+                if (video.getYoutubeId() == null || video.getYoutubeId().isEmpty()) continue;
+                String name = video.getName();
+                if (name != null && name.length() > 20) {
+                    name = name.substring(0, 17);
+                    name += "...";
+                }
+                TrailerButton trailerBtn = new TrailerButton(this);
+                trailerBtn.setText(name);
+                trailerBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MovieVideosQueryResult.YOUTUBE_APP_URL + video.getYoutubeId()));
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MovieVideosQueryResult.YOUTUBE_URL + video.getYoutubeId()));
+                        try {
+                            startActivity(appIntent);
+                        } catch (ActivityNotFoundException ex) {
+                            startActivity(webIntent);
+                        }
+                    }
+                });
+                mTrailerLayout.addView(trailerBtn);
+            }
         }
     }
 }
