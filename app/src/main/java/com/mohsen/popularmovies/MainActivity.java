@@ -2,7 +2,9 @@ package com.mohsen.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +20,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.mohsen.popularmovies.common.Utils;
+import com.mohsen.popularmovies.database.DatabaseWrapper;
+import com.mohsen.popularmovies.database.MovieDbHelper;
 import com.mohsen.popularmovies.model.MovieApi;
 import com.mohsen.popularmovies.model.MovieInfo;
 import com.mohsen.popularmovies.model.MovieInfoQueryResult;
@@ -47,13 +51,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private MovieInfoQueryResult mResult = null;
     private List<String> mPosterRelativePath;
     private String mQueryType;
-
+    private DatabaseWrapper mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        // init database.
+        mDb = new DatabaseWrapper(this, false);
 
         mPosterRelativePath = new ArrayList<>();
         // Set the preferences to default for each cold start of app.
@@ -96,6 +103,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         {
             mQueryType = sharedPreferences.getString(key, getString(R.string.pref_value_popularity));
             queryData();
+        } else if (key.equals(getString(R.string.pref_value_favorites))) {
+            mQueryType = sharedPreferences.getString(key, getString(R.string.pref_value_favorites));
+            queryData();
         }
     }
 
@@ -134,6 +144,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void queryData() {
         mLoadingIndicator.setVisibility(View.VISIBLE);
         mRetryButton.setVisibility(View.INVISIBLE);
+        if (mQueryType.equals(getString(R.string.pref_value_favorites))) {
+            queryDataFromDb();
+        } else {
+            queryDataFromWeb();
+        }
+    }
+
+    private void queryDataFromWeb() {
         Map<String, String> queryParams = new HashMap<>();
         queryParams.put(getString(R.string.api_key_title), BuildConfig.API_KEY);
         queryParams.put(getString(R.string.api_param_language), getString(R.string.api_param_language_value));
@@ -154,6 +172,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 showHideErrorMassage(t.getMessage(), true);
             }
         });
+    }
+
+    private void queryDataFromDb() {
+        //TODO query data from DB
+        // (1) update the result from the db to mResult
+        // (2) update the mPosterRelativePath
+        // (3) update the recyclerView adapter
+        // (4) show hide error message.
     }
 
     private void initRecyclerView() {
