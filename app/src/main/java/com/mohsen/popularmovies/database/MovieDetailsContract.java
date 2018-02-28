@@ -1,6 +1,9 @@
 package com.mohsen.popularmovies.database;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
+
+import java.net.URI;
 
 /**
  * Created by Mohsen on 27.02.2018.
@@ -10,7 +13,14 @@ import android.provider.BaseColumns;
 public final class MovieDetailsContract {
     private MovieDetailsContract() {}
 
+    public static final String AUTHORITY = "com.mohsen.popularmovies";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+    public static final String PATH_MOVIES = "movieInfo";
+    public static final String PATH_VIDEOS = "movieVideos";
+
     public static class MovieInfoEntry implements BaseColumns {
+        public static final Uri CONTENT_URI_MOVIES = BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIES).build();
+
         public static final String TABLE_NAME = "movieInfo";
         public static final String COLUMN_NAME_MOVIE_ID = "movieId";
         public static final String COLUMN_NAME_TITLE = "title";
@@ -23,6 +33,8 @@ public final class MovieDetailsContract {
     }
 
     public static class MovieVideoEntry implements BaseColumns {
+        public static final Uri CONTENT_URI_VIDEOS = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VIDEOS).build();
+
         public static final String TABLE_NAME = "movieVideos";
         public static final String COLUMN_NAME_MOVIE_ID = "movieId";
         public static final String COLUMN_NAME_YOUTUBE_ID = "youtubeId";

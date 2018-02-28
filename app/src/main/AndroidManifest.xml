@@ -33,6 +33,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DetailsActivity" />
         </activity>
+
+        <provider
+            android:name="com.mohsen.popularmovies.database.MovieContentProvider"
+            android:authorities="com.mohsen.popularmovies"
+            android:exported="true" />
     </application>
 
 </manifest>
