@@ -16,18 +16,27 @@ public class MovieInfo implements Parcelable {
     private static final String POSTER_SIZE = "w185";
 
     @SerializedName("id")
-    private final String id;
+    private String id;
     @SerializedName("poster_path")
-    private final String posterRelativePath;
+    private String posterRelativePath;
 
     public MovieInfo(String id, String posterRelativePath) {
         this.id = id;
         this.posterRelativePath = posterRelativePath;
     }
 
+    public MovieInfo() {
+        id = null;
+        posterRelativePath = null;
+    }
+
     public String getId() { return id; }
 
     public String getPosterRelativePath() { return posterRelativePath; }
+
+    public void setId(String movieId) { id = movieId; }
+
+    public void setPosterRelativePath(String path) {posterRelativePath = path;}
 
     /**
      *

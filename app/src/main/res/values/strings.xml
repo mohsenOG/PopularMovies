@@ -18,7 +18,7 @@
     <string name="pref_title_highest_rating">Highest rating</string>
     <string name="pref_value_highest_rating" translatable="false">top_rated</string>
     <string name="pref_title_favorites">Favorites</string>
-    <string name="pref_value_favorites" translatable="false">favorites12,.</string>
+    <string name="pref_value_favorites" translatable="false">favorites</string>
 
 
     <string name="poster_default_description">Default poster</string>
@@ -35,4 +35,8 @@
     <string name="detail_overview">Overview</string>
     <string name="detail_reviews">Reviews</string>
     <string name="detail_trailers">Trailers</string>
+
+    <string name="toast_fav_added">Added successfully</string>
+    <string name="toast_fav_removed">Removed successfully</string>
+
 </resources>

@@ -11,8 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.*;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieVideoEntry.*;
-
 /**
  *
  * Created by Mohsen on 27.02.2018.
@@ -22,8 +20,6 @@ public class MovieContentProvider extends ContentProvider {
 
     public static final int MOVIE_INFO = 100;
     public static final int MOVIE_INFO_WITH_ID = 101;
-    public static final int MOVIE_VIDEO = 200;
-    public static final int MOVIE_VIDEO_WITH_ID = 201;
 
     private final UriMatcher sUriMatcher = buildUriMatcher();
     private DatabaseWrapper mDb;
@@ -44,16 +40,9 @@ public class MovieContentProvider extends ContentProvider {
             case MOVIE_INFO:
                 ret = mDb.query(MovieDetailsContract.MovieInfoEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
                 break;
-            case MOVIE_VIDEO:
-                ret = mDb.query(MovieDetailsContract.MovieVideoEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
-                break;
             case MOVIE_INFO_WITH_ID:
                 id = uri.getPathSegments().get(1);
-                ret = mDb.query(MovieDetailsContract.MovieInfoEntry.TABLE_NAME, projection, "_id=?", new String[]{id}, null, null, sortOrder);
-                break;
-            case MOVIE_VIDEO_WITH_ID:
-                id = uri.getPathSegments().get(1);
-                ret = mDb.query(MovieDetailsContract.MovieVideoEntry.TABLE_NAME, projection, "_id=?", new String[]{id}, null, null, sortOrder);
+                ret = mDb.query(MovieDetailsContract.MovieInfoEntry.TABLE_NAME, projection, COLUMN_NAME_MOVIE_ID + "=?", new String[]{id}, null, null, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknwon uri:" + uri);
@@ -83,11 +72,6 @@ public class MovieContentProvider extends ContentProvider {
                 else
                     throw new SQLException("Failed to insert row into " + uri);
                 break;
-            case MOVIE_VIDEO:
-                id = mDb.insert(MovieDetailsContract.MovieVideoEntry.TABLE_NAME, null, values);
-                if (id > 0)
-                    ret = ContentUris.withAppendedId(CONTENT_URI_VIDEOS, id);
-                break;
             default:
                 throw new UnsupportedOperationException("Unknwon uri:" + uri);
         }
@@ -102,10 +86,7 @@ public class MovieContentProvider extends ContentProvider {
         String id = uri.getPathSegments().get(1);
         switch (match) {
             case MOVIE_INFO_WITH_ID:
-                deletedRowsNo = mDb.delete(MovieDetailsContract.MovieInfoEntry.TABLE_NAME, "id=?", new String[]{id});
-                break;
-            case MOVIE_VIDEO_WITH_ID:
-                deletedRowsNo = mDb.delete(MovieDetailsContract.MovieVideoEntry.TABLE_NAME, "id=?", new String[]{id});
+                deletedRowsNo = mDb.delete(MovieDetailsContract.MovieInfoEntry.TABLE_NAME, COLUMN_NAME_MOVIE_ID + "=?", new String[]{id});
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -126,9 +107,7 @@ public class MovieContentProvider extends ContentProvider {
         // Directory & Single item
         uriMatcher.addURI(MovieDetailsContract.AUTHORITY, MovieDetailsContract.PATH_MOVIES, MOVIE_INFO);
         uriMatcher.addURI(MovieDetailsContract.AUTHORITY, MovieDetailsContract.PATH_MOVIES + "/#", MOVIE_INFO_WITH_ID);
-        //
-        uriMatcher.addURI(MovieDetailsContract.AUTHORITY, MovieDetailsContract.PATH_VIDEOS, MOVIE_VIDEO);
-        uriMatcher.addURI(MovieDetailsContract.AUTHORITY, MovieDetailsContract.PATH_VIDEOS + "/#", MOVIE_VIDEO_WITH_ID);
+
         return uriMatcher;
     }
 

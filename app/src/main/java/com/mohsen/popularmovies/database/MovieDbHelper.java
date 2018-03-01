@@ -34,21 +34,12 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieInfoEntry.COLUMN_NAME_REVIEWS + " TEXT" +
                 ");";
 
-        final String SQL_CREATE_MOVIE_VIDEO_TABLE = "CREATE TABLE " +
-                MovieVideoEntry.TABLE_NAME + " (" +
-                MovieVideoEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                MovieVideoEntry.COLUMN_NAME_MOVIE_ID + " TEXT," +
-                MovieVideoEntry.COLUMN_NAME_NAME + " TEXT," +
-                MovieVideoEntry.COLUMN_NAME_YOUTUBE_ID + " TEXT" +
-                ");";
         db.execSQL(SQL_CREATE_MOVIE_INFO_TABLE);
-        db.execSQL(SQL_CREATE_MOVIE_VIDEO_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + MovieInfoEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + MovieVideoEntry.TABLE_NAME);
         onCreate(db);
     }
 }

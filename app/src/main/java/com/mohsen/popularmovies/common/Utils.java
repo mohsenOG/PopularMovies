@@ -60,4 +60,16 @@ public class Utils {
             return null;
         }
     }
+
+    public static String timeConverterToOriginal(String time) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("dd MM yyyy", Locale.US);
+        SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        Date date;
+        try {
+            date = inputFormat.parse(time);
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
 }

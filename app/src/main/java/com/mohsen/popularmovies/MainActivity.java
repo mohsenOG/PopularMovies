@@ -1,15 +1,17 @@
 package com.mohsen.popularmovies;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,8 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.mohsen.popularmovies.common.Utils;
-import com.mohsen.popularmovies.database.DatabaseWrapper;
-import com.mohsen.popularmovies.database.MovieDbHelper;
+import com.mohsen.popularmovies.database.MovieDetailsContract;
 import com.mohsen.popularmovies.model.MovieApi;
 import com.mohsen.popularmovies.model.MovieInfo;
 import com.mohsen.popularmovies.model.MovieInfoQueryResult;
@@ -37,10 +38,19 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, RecyclerViewAdapter.ItemClickListener
+import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_MOVIE_ID;
+import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_POSTER_PATH;
+
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, RecyclerViewAdapter.ItemClickListener, LoaderManager.LoaderCallbacks<Cursor>
 {
 
+    // Used for querying data
+    private static final int ID_MOVIE_PATH_LOADER = 10;
+    private static final int ID_MOVIE_INFO_LOADER = 20;
+    // Used in intents extras
     public static final String MOVIE_INFO_EXTRA = "MOVIE_INFO_EXTRA";
+    public static final String MOVIE_FAV_EXTRA = "MOVIE_FAV_EXTRA";
+    public static final String BUNDLE_MOVIE_INFO = "BUNDLE_MOVIE_INFO";
 
     private SharedPreferences mSharedPreferences;
     private RecyclerViewAdapter mAdapter;
@@ -51,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private MovieInfoQueryResult mResult = null;
     private List<String> mPosterRelativePath;
     private String mQueryType;
-    private DatabaseWrapper mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,17 +68,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        // init database.
-        mDb = new DatabaseWrapper(this, false);
-
         mPosterRelativePath = new ArrayList<>();
         // Set the preferences to default for each cold start of app.
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mQueryType = mSharedPreferences.getString(getString(R.string.pref_key_sorting), getString(R.string.pref_value_popularity));
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        getLoaderManager().initLoader(ID_MOVIE_PATH_LOADER, null, this);
+        getLoaderManager().initLoader(ID_MOVIE_INFO_LOADER, null, this);
 
         // Check if there is internet connection.
-        if (!Utils.isOnline(this))
+        if (!Utils.isOnline(this) && !mQueryType.equals(getString(R.string.pref_value_favorites)))
             showHideErrorMassage(getString(R.string.no_internet), true);
         // Query data from MovieDB
         queryData();
@@ -103,9 +111,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         {
             mQueryType = sharedPreferences.getString(key, getString(R.string.pref_value_popularity));
             queryData();
-        } else if (key.equals(getString(R.string.pref_value_favorites))) {
-            mQueryType = sharedPreferences.getString(key, getString(R.string.pref_value_favorites));
-            queryData();
         }
     }
 
@@ -118,11 +123,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onItemClick(String posterRelPath) {
         //Find the MovieInfo object based on poster relative path.
+        // Find firstly in mResult.
         MovieInfo info = mResult.getMovieInfo(posterRelPath);
-        if (info == null) return;
-        Intent intent = new Intent(this, DetailsActivity.class);
-        intent.putExtra(MOVIE_INFO_EXTRA, info);
-        startActivity(intent);
+        if (info != null) {
+            Intent intent = new Intent(this, DetailsActivity.class);
+            intent.putExtra(MOVIE_INFO_EXTRA, info);
+            intent.putExtra(MOVIE_FAV_EXTRA, false);
+            startActivity(intent);
+        } else { // Search the database
+            Bundle bundle = new Bundle();
+            bundle.putString(BUNDLE_MOVIE_INFO, posterRelPath);
+            getLoaderManager().restartLoader(ID_MOVIE_INFO_LOADER, bundle, this);
+        }
     }
 
     // Show true, hide false
@@ -145,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mLoadingIndicator.setVisibility(View.VISIBLE);
         mRetryButton.setVisibility(View.INVISIBLE);
         if (mQueryType.equals(getString(R.string.pref_value_favorites))) {
-            queryDataFromDb();
+            getLoaderManager().restartLoader(ID_MOVIE_PATH_LOADER, null, this);
         } else {
             queryDataFromWeb();
         }
@@ -174,14 +186,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         });
     }
 
-    private void queryDataFromDb() {
-        //TODO query data from DB
-        // (1) update the result from the db to mResult
-        // (2) update the mPosterRelativePath
-        // (3) update the recyclerView adapter
-        // (4) show hide error message.
-    }
-
     private void initRecyclerView() {
         GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 400);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -194,5 +198,60 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (view.getId() == R.id.btn_search_again) {
             queryData();
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Uri queryUri = MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES;
+        switch (id) {
+            case ID_MOVIE_PATH_LOADER:
+                return new CursorLoader(this, queryUri, null, null, null, null);
+            case ID_MOVIE_INFO_LOADER:
+                if (args == null) return null;
+                String selectionArg = args.getString(BUNDLE_MOVIE_INFO);
+                if (selectionArg == null || selectionArg.isEmpty()) return null;
+                return new CursorLoader(this, queryUri, null, COLUMN_NAME_POSTER_PATH + "=?", new String[]{selectionArg}, null);
+            default:
+                throw new RuntimeException("Loader Not Implemented: " + id);
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        int id = loader.getId();
+        switch (id) {
+            case ID_MOVIE_PATH_LOADER:
+                if (!mQueryType.equals(getString(R.string.pref_value_favorites))) return;
+                mPosterRelativePath.clear();
+                while (data.moveToNext()) {
+                    int idx = data.getColumnIndex(COLUMN_NAME_POSTER_PATH);
+                    String path = data.getString(idx);
+                    if (path != null && !path.isEmpty())
+                        mPosterRelativePath.add(path);
+                }
+                mAdapter.swapData(mPosterRelativePath);
+                showHideErrorMassage(null, false);
+                break;
+            case ID_MOVIE_INFO_LOADER:
+                // Each poster path can belong to just one movie.
+                boolean checkData = data.moveToFirst();
+                if (checkData) {
+                    MovieInfo info = new MovieInfo();
+                    int idIdx = data.getColumnIndex(COLUMN_NAME_MOVIE_ID);
+                    int posterPathIdx = data.getColumnIndex(COLUMN_NAME_POSTER_PATH);
+                    info.setId(data.getString(idIdx));
+                    info.setPosterRelativePath(data.getString(posterPathIdx));
+                    Intent intent = new Intent(this, DetailsActivity.class);
+                    intent.putExtra(MOVIE_INFO_EXTRA, info);
+                    intent.putExtra(MOVIE_FAV_EXTRA, true);
+                    startActivity(intent);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        showHideErrorMassage(loader.toString(), true);
     }
 }
