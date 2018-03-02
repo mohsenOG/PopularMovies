@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @BindView(R.id.btn_search_again) Button mRetryButton;
     private MovieInfoQueryResult mResult = null;
     private List<String> mPosterRelativePath;
+    private List<String> mPosterRelativePathFavorite;
     private String mQueryType;
 
     @Override
@@ -69,12 +70,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         ButterKnife.bind(this);
 
         mPosterRelativePath = new ArrayList<>();
+        mPosterRelativePathFavorite = new ArrayList<>();
         // Set the preferences to default for each cold start of app.
+        PreferenceManager.setDefaultValues(this, R.xml.pref_popular_movies, true);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mQueryType = mSharedPreferences.getString(getString(R.string.pref_key_sorting), getString(R.string.pref_value_popularity));
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
         getLoaderManager().initLoader(ID_MOVIE_PATH_LOADER, null, this);
-        getLoaderManager().initLoader(ID_MOVIE_INFO_LOADER, null, this);
+        //getLoaderManager().initLoader(ID_MOVIE_INFO_LOADER, null, this);
 
         // Check if there is internet connection.
         if (!Utils.isOnline(this) && !mQueryType.equals(getString(R.string.pref_value_favorites)))
@@ -124,11 +127,18 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void onItemClick(String posterRelPath) {
         //Find the MovieInfo object based on poster relative path.
         // Find firstly in mResult.
-        MovieInfo info = mResult.getMovieInfo(posterRelPath);
-        if (info != null) {
+        MovieInfo info;
+        if (mResult != null && (info = mResult.getMovieInfo(posterRelPath)) != null) {
             Intent intent = new Intent(this, DetailsActivity.class);
             intent.putExtra(MOVIE_INFO_EXTRA, info);
-            intent.putExtra(MOVIE_FAV_EXTRA, false);
+            boolean isFav = false;
+            for (String path : mPosterRelativePathFavorite) {
+                if (path.equals(posterRelPath)) {
+                    isFav = true;
+                    break;
+                }
+            }
+            intent.putExtra(MOVIE_FAV_EXTRA, isFav);
             startActivity(intent);
         } else { // Search the database
             Bundle bundle = new Bundle();
@@ -174,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             public void onResponse(@NonNull Call<MovieInfoQueryResult> call, @NonNull Response<MovieInfoQueryResult> response) {
                 mResult = response.body();
                 if (mResult == null) return;
+                mPosterRelativePath.clear();
                 mPosterRelativePath = mResult.getPosterRelativePaths();
                 mAdapter.swapData(mPosterRelativePath);
                 showHideErrorMassage(null, false);
@@ -189,7 +200,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void initRecyclerView() {
         GridAutofitLayoutManager layoutManager = new GridAutofitLayoutManager(this, 400);
         mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new RecyclerViewAdapter(this, mPosterRelativePath);
+        mAdapter = new RecyclerViewAdapter(this, (mPosterRelativePath != null && mPosterRelativePath.isEmpty())
+                ? mPosterRelativePath : mPosterRelativePathFavorite);
         mAdapter.setItemClickListener(this);
         mRecyclerView.setAdapter(mAdapter);
     }
@@ -203,17 +215,20 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Uri queryUri = MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES;
+        CursorLoader ret;
         switch (id) {
             case ID_MOVIE_PATH_LOADER:
-                return new CursorLoader(this, queryUri, null, null, null, null);
+                ret = new CursorLoader(this, queryUri, null, null, null, null);
+                break;
             case ID_MOVIE_INFO_LOADER:
-                if (args == null) return null;
                 String selectionArg = args.getString(BUNDLE_MOVIE_INFO);
-                if (selectionArg == null || selectionArg.isEmpty()) return null;
-                return new CursorLoader(this, queryUri, null, COLUMN_NAME_POSTER_PATH + "=?", new String[]{selectionArg}, null);
+                ret = new CursorLoader(this, queryUri, null, COLUMN_NAME_POSTER_PATH + "=?", new String[]{selectionArg}, null);
+                break;
             default:
                 throw new RuntimeException("Loader Not Implemented: " + id);
         }
+
+        return ret;
     }
 
     @Override
@@ -221,15 +236,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         int id = loader.getId();
         switch (id) {
             case ID_MOVIE_PATH_LOADER:
-                if (!mQueryType.equals(getString(R.string.pref_value_favorites))) return;
-                mPosterRelativePath.clear();
+                mPosterRelativePathFavorite.clear();
                 while (data.moveToNext()) {
                     int idx = data.getColumnIndex(COLUMN_NAME_POSTER_PATH);
                     String path = data.getString(idx);
                     if (path != null && !path.isEmpty())
-                        mPosterRelativePath.add(path);
+                        mPosterRelativePathFavorite.add(path);
                 }
-                mAdapter.swapData(mPosterRelativePath);
+                if (!mQueryType.equals(getString(R.string.pref_value_favorites))) return;
+                mAdapter.swapData(mPosterRelativePathFavorite);
                 showHideErrorMassage(null, false);
                 break;
             case ID_MOVIE_INFO_LOADER:
@@ -252,6 +267,15 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        showHideErrorMassage(loader.toString(), true);
+        int id = loader.getId();
+        switch (id) {
+            case ID_MOVIE_PATH_LOADER:
+                mPosterRelativePathFavorite.clear();
+                break;
+            case ID_MOVIE_INFO_LOADER:
+                break;
+            default:
+                throw new RuntimeException("Loader Did not reset properly: " + id);
+        }
     }
 }

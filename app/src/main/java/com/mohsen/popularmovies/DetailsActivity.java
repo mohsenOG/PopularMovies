@@ -104,8 +104,6 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         if (!Utils.isOnline(this) && !isFav)
             showHideErrorMessage(getString(R.string.no_internet), true);
 
-        getLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
-
         initViews(info , isFav);
 
    }
@@ -120,12 +118,15 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         }
         // Favorite button
         mFavButton.setChecked(isFav);
-        mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
+        if (isFav)
+            mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_on));
+        else
+            mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
+
         mFavButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    Uri insertUri = MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES;
                     ContentValues values = new ContentValues();
                     values.put(COLUMN_NAME_MOVIE_ID, mMovieId);
                     values.put(COLUMN_NAME_TITLE, DetailsActivity.this.getTitle().toString());
@@ -136,7 +137,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                     values.put(COLUMN_NAME_RELEASE_DATE, Utils.timeConverterToOriginal(mReleaseDateTextView.getText().toString()));
                     values.put(COLUMN_NAME_REVIEWS, mReviewTextView.getText().toString());
                     ContentProviderAsync cpAsync = new ContentProviderAsync(getContentResolver());
-                    cpAsync.startInsert(1, null, insertUri, values);
+                    cpAsync.startInsert(1, null, MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES, values);
                     mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_on));
                 }
                 else {
@@ -207,8 +208,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
                 fillViews(title, originalTitle, mPosterPath, overview, voteAverage, releaseDate, reviews, trailers);
             }
-
-
+            
             @Override
             public void onFailure(Call<MovieDetails> call, Throwable t) {
                 if (isFav) {
@@ -287,13 +287,10 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (args == null) return null;
-        Uri queryUri = MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES;
         switch (id) {
             case MOVIE_LOADER_ID:
-                String selectionArg = args.getString(BUNDLE_MOVIE_INFO);
-                if (selectionArg == null || selectionArg.isEmpty()) return null;
-                return new CursorLoader(this, queryUri, null, COLUMN_NAME_MOVIE_ID + "=?", new String[]{selectionArg}, null);
+                String selectionArg = args.getString(MOVIE_ID_EXTRA);
+                return new CursorLoader(this, MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES, null, COLUMN_NAME_MOVIE_ID + "=?", new String[]{selectionArg}, null);
             default:
                 throw new RuntimeException("Loader Not Implemented: " + id);
         }
@@ -328,7 +325,5 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        showHideErrorMessage(loader.toString(), true);
-    }
+    public void onLoaderReset(Loader<Cursor> loader) {}
 }
