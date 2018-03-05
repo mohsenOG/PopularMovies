@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mQueryType = mSharedPreferences.getString(getString(R.string.pref_key_sorting), getString(R.string.pref_value_popularity));
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        getLoaderManager().initLoader(ID_MOVIE_PATH_LOADER, null, this);
+        //getLoaderManager().initLoader(ID_MOVIE_PATH_LOADER, null, this);
         //getLoaderManager().initLoader(ID_MOVIE_INFO_LOADER, null, this);
 
         // Check if there is internet connection.
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         mLoadingIndicator.setVisibility(View.VISIBLE);
         mRetryButton.setVisibility(View.INVISIBLE);
         if (mQueryType.equals(getString(R.string.pref_value_favorites))) {
-            getLoaderManager().restartLoader(ID_MOVIE_PATH_LOADER, null, this);
+            getLoaderManager().restartLoader(ID_MOVIE_PATH_LOADER, null, MainActivity.this);
         } else {
             queryDataFromWeb();
         }
@@ -233,8 +233,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        int id = loader.getId();
-        switch (id) {
+        switch (loader.getId()) {
             case ID_MOVIE_PATH_LOADER:
                 mPosterRelativePathFavorite.clear();
                 while (data.moveToNext()) {
@@ -243,7 +242,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     if (path != null && !path.isEmpty())
                         mPosterRelativePathFavorite.add(path);
                 }
-                if (!mQueryType.equals(getString(R.string.pref_value_favorites))) return;
+                if (!mQueryType.equals(getString(R.string.pref_value_favorites))) {
+                    mPosterRelativePath.clear();
+                    mAdapter.swapData(mPosterRelativePath);
+                    return;
+                }
                 mAdapter.swapData(mPosterRelativePathFavorite);
                 showHideErrorMassage(null, false);
                 break;
@@ -267,15 +270,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        int id = loader.getId();
-        switch (id) {
+        switch (loader.getId()) {
             case ID_MOVIE_PATH_LOADER:
                 mPosterRelativePathFavorite.clear();
                 break;
             case ID_MOVIE_INFO_LOADER:
                 break;
             default:
-                throw new RuntimeException("Loader Did not reset properly: " + id);
+                throw new RuntimeException("Loader Did not reset properly: " + loader.getId());
         }
     }
 }

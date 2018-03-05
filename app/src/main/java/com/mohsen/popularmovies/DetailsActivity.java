@@ -63,6 +63,8 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
     private static final String MOVIE_ID_EXTRA = "MOVIE_ID_EXTRA";
     private static final int MOVIE_LOADER_ID = 30;
+    private static final int MOVIE_LOADER_IS_CHECKED_ID = 40;
+    private static final int MOVIE_LOADER_IS_NOT_CHECKED_ID = 50;
 
     @BindView(R.id.iv_poster) ImageView mPosterImageView;
     @BindView(R.id.tv_original_title) TextView mOriginalTitleTextView;
@@ -127,27 +129,14 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    ContentValues values = new ContentValues();
-                    values.put(COLUMN_NAME_MOVIE_ID, mMovieId);
-                    values.put(COLUMN_NAME_TITLE, DetailsActivity.this.getTitle().toString());
-                    values.put(COLUMN_NAME_ORIGINAL_TITLE, mOriginalTitleTextView.getText().toString());
-                    values.put(COLUMN_NAME_POSTER_PATH, mPosterPath);
-                    values.put(COLUMN_NAME_OVERVIEW, mOverviewTextView.getText().toString());
-                    values.put(COLUMN_NAME_VOTE_AVERAGE, mVoteAverageTextView.getText().toString());
-                    values.put(COLUMN_NAME_RELEASE_DATE, Utils.timeConverterToOriginal(mReleaseDateTextView.getText().toString()));
-                    values.put(COLUMN_NAME_REVIEWS, mReviewTextView.getText().toString());
-                    ContentProviderAsync cpAsync = new ContentProviderAsync(getContentResolver());
-                    cpAsync.startInsert(1, null, MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES, values);
-                    mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_on));
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MOVIE_ID_EXTRA, mMovieId);
+                    getLoaderManager().restartLoader(MOVIE_LOADER_IS_CHECKED_ID, bundle, DetailsActivity.this);
                 }
                 else {
-                    Uri removeUri = CONTENT_URI_MOVIES.buildUpon()
-                            .appendPath(PATH_MOVIES)
-                            .appendPath(mMovieId)
-                            .build();
-                    ContentProviderAsync cpAsync = new ContentProviderAsync(getContentResolver());
-                    cpAsync.startDelete(1, null, removeUri, null, null);
-                    mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MOVIE_ID_EXTRA, mMovieId);
+                    getLoaderManager().restartLoader(MOVIE_LOADER_IS_NOT_CHECKED_ID, bundle, DetailsActivity.this);
                 }
             }
         });
@@ -161,19 +150,17 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         @Override
         protected void onInsertComplete(int token, Object cookie, Uri uri) {
             super.onInsertComplete(token, cookie, uri);
+            mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_on));
             Toast.makeText(DetailsActivity.this, getString(R.string.toast_fav_added), Toast.LENGTH_SHORT).show();
         }
 
         @Override
         protected void onDeleteComplete(int token, Object cookie, int result) {
             super.onDeleteComplete(token, cookie, result);
+            mFavButton.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
             Toast.makeText(DetailsActivity.this, getString(R.string.toast_fav_removed), Toast.LENGTH_SHORT).show();
         }
     }
-
-    ;
-
-
 
     private void queryData(final String movieId, final boolean isFav) {
         Map<String, String> queryParams = new HashMap<>();
@@ -208,7 +195,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
                 fillViews(title, originalTitle, mPosterPath, overview, voteAverage, releaseDate, reviews, trailers);
             }
-            
+
             @Override
             public void onFailure(Call<MovieDetails> call, Throwable t) {
                 if (isFav) {
@@ -289,6 +276,8 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case MOVIE_LOADER_ID:
+            case MOVIE_LOADER_IS_CHECKED_ID:
+            case MOVIE_LOADER_IS_NOT_CHECKED_ID:
                 String selectionArg = args.getString(MOVIE_ID_EXTRA);
                 return new CursorLoader(this, MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES, null, COLUMN_NAME_MOVIE_ID + "=?", new String[]{selectionArg}, null);
             default:
@@ -298,30 +287,63 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data == null || !data.moveToFirst()) {
-            showHideErrorMessage(loader.toString(), true);
-            return;
+        switch (loader.getId()) {
+            case MOVIE_LOADER_ID:
+                if (data == null || !data.moveToFirst()) {
+                    showHideErrorMessage(loader.toString(), true);
+                    return;
+                }
+                showHideErrorMessage(null, false);
+                int titleIdx = data.getColumnIndex(COLUMN_NAME_TITLE);
+                int origTitleIdx = data.getColumnIndex(COLUMN_NAME_ORIGINAL_TITLE);
+                int posterPathIdx = data.getColumnIndex(COLUMN_NAME_POSTER_PATH);
+                int overviewIdx = data.getColumnIndex(COLUMN_NAME_OVERVIEW);
+                int votrAvgIdx = data.getColumnIndex(COLUMN_NAME_VOTE_AVERAGE);
+                int releaseIdx = data.getColumnIndex(COLUMN_NAME_RELEASE_DATE);
+                int reviewsIdx = data.getColumnIndex(COLUMN_NAME_REVIEWS);
+
+                String title = data.getString(titleIdx);
+                String origTitle = data.getString(origTitleIdx);
+                mPosterPath = data.getString(posterPathIdx);
+                String overview = data.getString(overviewIdx);
+                String voteAvg = data.getString(votrAvgIdx);
+                String releaseDate = data.getString(releaseIdx);
+                if (releaseDate != null)
+                    releaseDate = Utils.timeConverter(releaseDate);
+                String reviews = data.getString(reviewsIdx);
+
+                fillViews(title, origTitle, mPosterPath, overview, voteAvg, releaseDate, reviews, null);
+                break;
+            case MOVIE_LOADER_IS_CHECKED_ID:
+                if (data == null || !data.moveToFirst()) {
+                    ContentValues values = new ContentValues();
+                    values.put(COLUMN_NAME_MOVIE_ID, mMovieId);
+                    values.put(COLUMN_NAME_TITLE, DetailsActivity.this.getTitle().toString());
+                    values.put(COLUMN_NAME_ORIGINAL_TITLE, mOriginalTitleTextView.getText().toString());
+                    values.put(COLUMN_NAME_POSTER_PATH, mPosterPath);
+                    values.put(COLUMN_NAME_OVERVIEW, mOverviewTextView.getText().toString());
+                    values.put(COLUMN_NAME_VOTE_AVERAGE, mVoteAverageTextView.getText().toString());
+                    values.put(COLUMN_NAME_RELEASE_DATE, Utils.timeConverterToOriginal(mReleaseDateTextView.getText().toString()));
+                    values.put(COLUMN_NAME_REVIEWS, mReviewTextView.getText().toString());
+                    ContentProviderAsync cpAsync = new ContentProviderAsync(getContentResolver());
+                    cpAsync.startInsert(1, null, MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES, values);
+                }
+                break;
+
+            case MOVIE_LOADER_IS_NOT_CHECKED_ID:
+                if (data != null && data.moveToFirst()) {
+                    Uri removeUri = CONTENT_URI_MOVIES.buildUpon()
+                            .appendPath(PATH_MOVIES)
+                            .appendPath(mMovieId)
+                            .build();
+                    ContentProviderAsync cpAsync2 = new ContentProviderAsync(getContentResolver());
+                    cpAsync2.startDelete(1, null, removeUri, null, null);
+                }
+                break;
+
+            default:
+                break;
         }
-        showHideErrorMessage(null, false);
-        int titleIdx = data.getColumnIndex(COLUMN_NAME_TITLE);
-        int origTitleIdx = data.getColumnIndex(COLUMN_NAME_ORIGINAL_TITLE);
-        int posterPathIdx = data.getColumnIndex(COLUMN_NAME_POSTER_PATH);
-        int overviewIdx = data.getColumnIndex(COLUMN_NAME_OVERVIEW);
-        int votrAvgIdx = data.getColumnIndex(COLUMN_NAME_VOTE_AVERAGE);
-        int releaseIdx = data.getColumnIndex(COLUMN_NAME_RELEASE_DATE);
-        int reviewsIdx = data.getColumnIndex(COLUMN_NAME_REVIEWS);
-
-        String title = data.getString(titleIdx);
-        String origTitle = data.getString(origTitleIdx);
-        mPosterPath = data.getString(posterPathIdx);
-        String overview = data.getString(overviewIdx);
-        String voteAvg = data.getString(votrAvgIdx);
-        String releaseDate = data.getString(releaseIdx);
-        if (releaseDate != null)
-            releaseDate = Utils.timeConverter(releaseDate);
-        String reviews = data.getString(reviewsIdx);
-
-        fillViews(title, origTitle, mPosterPath, overview, voteAvg, releaseDate, reviews, null);
     }
 
     @Override
