@@ -18,8 +18,8 @@ import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEn
 
 public class MovieContentProvider extends ContentProvider {
 
-    public static final int MOVIE_INFO = 100;
-    public static final int MOVIE_INFO_WITH_ID = 101;
+    private static final int MOVIE_INFO = 100;
+    private static final int MOVIE_INFO_WITH_ID = 101;
 
     private final UriMatcher sUriMatcher = buildUriMatcher();
     private DatabaseWrapper mDb;
@@ -45,7 +45,7 @@ public class MovieContentProvider extends ContentProvider {
                 ret = mDb.query(MovieDetailsContract.MovieInfoEntry.TABLE_NAME, projection, COLUMN_NAME_MOVIE_ID + "=?", new String[]{id}, null, null, sortOrder);
                 break;
             default:
-                throw new UnsupportedOperationException("Unknwon uri:" + uri);
+                throw new UnsupportedOperationException("Unknown uri:" + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
 
@@ -62,7 +62,7 @@ public class MovieContentProvider extends ContentProvider {
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
         int match = sUriMatcher.match(uri);
-        Uri ret = null;
+        Uri ret;
         long id;
         switch (match) {
             case MOVIE_INFO:
@@ -73,7 +73,7 @@ public class MovieContentProvider extends ContentProvider {
                     throw new SQLException("Failed to insert row into " + uri);
                 break;
             default:
-                throw new UnsupportedOperationException("Unknwon uri:" + uri);
+                throw new UnsupportedOperationException("Unknown uri:" + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return ret;

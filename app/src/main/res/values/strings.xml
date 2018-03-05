@@ -27,8 +27,6 @@
 
     <string name="retry">Retry</string>
     <string name="retry_description">Please push button to retry.</string>
-    <string name="show_more">Show more</string>
-    <string name="show_less">Show_less</string>
 
     <string name="iv_poster_description">Poster of the movie.</string>
     <string name="tbtn_favorite_description">Favorite button</string>

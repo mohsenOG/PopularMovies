@@ -31,19 +31,7 @@ public class MovieDetails implements Parcelable {
     @SerializedName("reviews")
     private final MovieReviewsQueryResult reviews;
 
-    public MovieDetails(String id, String title, String originalTitle, String posterRelativePath, String overview, String voteAverage, String releaseDate, MovieVideosQueryResult videos, MovieReviewsQueryResult reviews) {
-        this.id = id;
-        this.title = title;
-        this.originalTitle = originalTitle;
-        this.posterRelativePath = posterRelativePath;
-        this.overview = overview;
-        this.voteAverage = voteAverage;
-        this.releaseDate = releaseDate;
-        this.videos = videos;
-        this.reviews = reviews;
-    }
-
-    public String getId() { return id;}
+    //public String getId() { return id;}
 
     public String getTitle() { return title; }
 
@@ -80,7 +68,7 @@ public class MovieDetails implements Parcelable {
         dest.writeParcelable(this.reviews, flags);
     }
 
-    protected MovieDetails(Parcel in) {
+    private MovieDetails(Parcel in) {
         this.id = in.readString();
         this.title = in.readString();
         this.originalTitle = in.readString();

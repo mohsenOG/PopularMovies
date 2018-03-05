@@ -17,11 +17,6 @@ public class MovieVideo implements Parcelable {
     @SerializedName("name")
     private final String name;
 
-    public MovieVideo(String youtubeId, String name) {
-        this.youtubeId = youtubeId;
-        this.name = name;
-    }
-
     public String getYoutubeId() { return youtubeId; }
 
     public String getName() { return name; }
@@ -38,12 +33,12 @@ public class MovieVideo implements Parcelable {
         dest.writeString(this.name);
     }
 
-    protected MovieVideo(Parcel in) {
+    private MovieVideo(Parcel in) {
         this.youtubeId = in.readString();
         this.name = in.readString();
     }
 
-    public static final Parcelable.Creator<MovieVideo> CREATOR = new Parcelable.Creator<MovieVideo>() {
+    static final Parcelable.Creator<MovieVideo> CREATOR = new Parcelable.Creator<MovieVideo>() {
         @Override
         public MovieVideo createFromParcel(Parcel source) {
             return new MovieVideo(source);

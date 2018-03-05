@@ -20,7 +20,7 @@ public class MovieReviewsQueryResult implements Parcelable {
         this.results = results;
     }
 
-    public List<MovieReview> getResults() { return results; }
+    private List<MovieReview> getResults() { return results; }
 
     public static String ReviewConverter (MovieReviewsQueryResult reviewsList) {
         StringBuilder ret = new StringBuilder();
@@ -52,7 +52,7 @@ public class MovieReviewsQueryResult implements Parcelable {
         dest.writeTypedList(this.results);
     }
 
-    protected MovieReviewsQueryResult(Parcel in) {
+    private MovieReviewsQueryResult(Parcel in) {
         this.results = in.createTypedArrayList(MovieReview.CREATOR);
     }
 

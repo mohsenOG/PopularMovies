@@ -10,10 +10,10 @@ import android.util.TypedValue;
  * @see https://codentrick.com/part-4-android-recyclerview-grid/
  */
 
-public class GridAutofitLayoutManager extends GridLayoutManager {
+public class GridAutoFitLayoutManager extends GridLayoutManager {
     private int mColumnWidth;
     private boolean mColumnWidthChanged = true;
-    public GridAutofitLayoutManager(Context context, int columnWidth) {
+    public GridAutoFitLayoutManager(Context context, int columnWidth) {
         super(context, 1);
         setColumnWidth(checkedColumnWidth(context, columnWidth));
     }

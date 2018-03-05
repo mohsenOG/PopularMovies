@@ -26,7 +26,7 @@ public class ExpandableTextView extends android.support.v7.widget.AppCompatTextV
     private CharSequence trimmedText;
     private BufferType bufferType;
     private boolean trim = true;
-    private int trimLength;
+    private final int trimLength;
 
     public ExpandableTextView(Context context) {
         this(context, null);
@@ -60,12 +60,12 @@ public class ExpandableTextView extends android.support.v7.widget.AppCompatTextV
     @Override
     public void setText(CharSequence text, BufferType type) {
         originalText = text;
-        trimmedText = getTrimmedText(text);
+        trimmedText = getTrimmedText();
         bufferType = type;
         setText();
     }
 
-    private CharSequence getTrimmedText(CharSequence text) {
+    private CharSequence getTrimmedText() {
         if (originalText != null && originalText.length() > trimLength) {
             SpannableStringBuilder builder = new SpannableStringBuilder(originalText, 0, trimLength + 1)
             .append("   ")
@@ -75,19 +75,5 @@ public class ExpandableTextView extends android.support.v7.widget.AppCompatTextV
         } else {
             return originalText;
         }
-    }
-
-    public CharSequence getOriginalText() {
-        return originalText;
-    }
-
-    public void setTrimLength(int trimLength) {
-        this.trimLength = trimLength;
-        trimmedText = getTrimmedText(originalText);
-        setText();
-    }
-
-    public int getTrimLength() {
-        return trimLength;
     }
 }

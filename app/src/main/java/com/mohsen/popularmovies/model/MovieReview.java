@@ -24,7 +24,7 @@ public class MovieReview implements Parcelable {
         this.content = content;
     }
 
-    public String getAuthor() { return author; }
+    String getAuthor() { return author; }
 
     public String getContent() { return content; }
 
@@ -41,13 +41,13 @@ public class MovieReview implements Parcelable {
         dest.writeString(this.content);
     }
 
-    protected MovieReview(Parcel in) {
+    private MovieReview(Parcel in) {
         this.id = in.readString();
         this.author = in.readString();
         this.content = in.readString();
     }
 
-    public static final Parcelable.Creator<MovieReview> CREATOR = new Parcelable.Creator<MovieReview>() {
+    static final Parcelable.Creator<MovieReview> CREATOR = new Parcelable.Creator<MovieReview>() {
         @Override
         public MovieReview createFromParcel(Parcel source) {
             return new MovieReview(source);

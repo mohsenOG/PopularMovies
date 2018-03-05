@@ -1,6 +1,7 @@
 package com.mohsen.popularmovies;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,15 +35,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         mMoviesPosterRelativePath = moviesPosterRelPath;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.recyclerview_item, parent, false);
         return new ViewHolder(mContext, view);
     }
 
     // Bind data to each view holder.
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.bindingImages(mMoviesPosterRelativePath.get(position));
     }
 
@@ -55,15 +57,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         void onItemClick(String posterRelPath);
     }
 
-    public void setItemClickListener(ItemClickListener itemClickListener) {
+    void setItemClickListener(ItemClickListener itemClickListener) {
         mItemClickListener = itemClickListener;
     }
 
-    public void swapData(List<String> newData) {
-        if (newData == null || newData.size() == 0)
-            return;
-        mMoviesPosterRelativePath.clear();
-        mMoviesPosterRelativePath.addAll(newData);
+    void swapData(List<String> newData) {
+        if (newData == null || newData.size() == 0) {
+            mMoviesPosterRelativePath.clear();
+        } else {
+            mMoviesPosterRelativePath.clear();
+            mMoviesPosterRelativePath.addAll(newData);
+        }
         notifyDataSetChanged();
     }
 
@@ -72,9 +76,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener{
         @BindView(R.id.poster_image_view) ImageView mImageView;
         private String mImageRelPath;
-        private Context mContext;
+        private final Context mContext;
 
-        public ViewHolder(Context context, View itemView) {
+        ViewHolder(Context context, View itemView) {
             super(itemView);
             mContext = context;
             mImageRelPath = null;
@@ -88,7 +92,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 mItemClickListener.onItemClick(mImageRelPath);
         }
 
-        public void bindingImages(String imageRelPath)
+        void bindingImages(String imageRelPath)
         {
             mImageRelPath = imageRelPath;
             String absPath = MovieInfo.posterPathConverter(imageRelPath);

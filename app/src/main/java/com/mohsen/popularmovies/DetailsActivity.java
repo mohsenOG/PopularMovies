@@ -56,7 +56,6 @@ import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEn
 import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_TITLE;
 import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_VOTE_AVERAGE;
 import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.PATH_MOVIES;
 
 public class DetailsActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -143,7 +142,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     }
 
     private class ContentProviderAsync extends AsyncQueryHandler {
-        public ContentProviderAsync(ContentResolver cr) {
+        ContentProviderAsync(ContentResolver cr) {
             super(cr);
         }
 
@@ -298,7 +297,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                 int origTitleIdx = data.getColumnIndex(COLUMN_NAME_ORIGINAL_TITLE);
                 int posterPathIdx = data.getColumnIndex(COLUMN_NAME_POSTER_PATH);
                 int overviewIdx = data.getColumnIndex(COLUMN_NAME_OVERVIEW);
-                int votrAvgIdx = data.getColumnIndex(COLUMN_NAME_VOTE_AVERAGE);
+                int voteAvgIdx = data.getColumnIndex(COLUMN_NAME_VOTE_AVERAGE);
                 int releaseIdx = data.getColumnIndex(COLUMN_NAME_RELEASE_DATE);
                 int reviewsIdx = data.getColumnIndex(COLUMN_NAME_REVIEWS);
 
@@ -306,7 +305,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                 String origTitle = data.getString(origTitleIdx);
                 mPosterPath = data.getString(posterPathIdx);
                 String overview = data.getString(overviewIdx);
-                String voteAvg = data.getString(votrAvgIdx);
+                String voteAvg = data.getString(voteAvgIdx);
                 String releaseDate = data.getString(releaseIdx);
                 if (releaseDate != null)
                     releaseDate = Utils.timeConverter(releaseDate);
@@ -333,7 +332,6 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             case MOVIE_LOADER_IS_NOT_CHECKED_ID:
                 if (data != null && data.moveToFirst()) {
                     Uri removeUri = CONTENT_URI_MOVIES.buildUpon()
-                            .appendPath(PATH_MOVIES)
                             .appendPath(mMovieId)
                             .build();
                     ContentProviderAsync cpAsync2 = new ContentProviderAsync(getContentResolver());

@@ -20,10 +20,10 @@ public class MovieInfo implements Parcelable {
     @SerializedName("poster_path")
     private String posterRelativePath;
 
-    public MovieInfo(String id, String posterRelativePath) {
-        this.id = id;
-        this.posterRelativePath = posterRelativePath;
-    }
+//    public MovieInfo(String id, String posterRelativePath) {
+//        this.id = id;
+//        this.posterRelativePath = posterRelativePath;
+//    }
 
     public MovieInfo() {
         id = null;
@@ -58,12 +58,12 @@ public class MovieInfo implements Parcelable {
         dest.writeString(this.posterRelativePath);
     }
 
-    protected MovieInfo(Parcel in) {
+    private MovieInfo(Parcel in) {
         this.id = in.readString();
         this.posterRelativePath = in.readString();
     }
 
-    // Make the class parcable! Auto-generated
+    // Make the class Parcelable! Auto-generated
     public static final Parcelable.Creator<MovieInfo> CREATOR = new Parcelable.Creator<MovieInfo>() {
         @Override
         public MovieInfo createFromParcel(Parcel source) {

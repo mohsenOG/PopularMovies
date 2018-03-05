@@ -3,8 +3,6 @@ package com.mohsen.popularmovies.database;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import java.net.URI;
-
 /**
  * Created by Mohsen on 27.02.2018.
  *
@@ -13,8 +11,8 @@ import java.net.URI;
 public final class MovieDetailsContract {
     private MovieDetailsContract() {}
 
-    public static final String AUTHORITY = "com.mohsen.popularmovies";
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+    static final String AUTHORITY = "com.mohsen.popularmovies";
+    static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
     public static final String PATH_MOVIES = "movieInfo";
 
     public static class MovieInfoEntry implements BaseColumns {

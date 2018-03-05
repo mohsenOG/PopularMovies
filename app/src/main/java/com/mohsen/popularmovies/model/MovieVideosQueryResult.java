@@ -41,7 +41,7 @@ public class MovieVideosQueryResult implements Parcelable {
         dest.writeTypedList(this.result);
     }
 
-    protected MovieVideosQueryResult(Parcel in) {
+    private MovieVideosQueryResult(Parcel in) {
         this.result = in.createTypedArrayList(MovieVideo.CREATOR);
     }
 
