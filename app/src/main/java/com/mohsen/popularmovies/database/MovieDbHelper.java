@@ -39,6 +39,9 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // In this very small app it works perfectly but it is better to use ALTER command
+        // instead of DROP.
+        // https://thebhwgroup.com/blog/how-android-sqlite-onupgrade
         db.execSQL("DROP TABLE IF EXISTS " + MovieInfoEntry.TABLE_NAME);
         onCreate(db);
     }

@@ -332,6 +332,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             case MOVIE_LOADER_IS_NOT_CHECKED_ID:
                 if (data != null && data.moveToFirst()) {
                     Uri removeUri = CONTENT_URI_MOVIES.buildUpon()
+                            
                             .appendPath(mMovieId)
                             .build();
                     ContentProviderAsync cpAsync2 = new ContentProviderAsync(getContentResolver());
