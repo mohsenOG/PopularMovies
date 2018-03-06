@@ -262,7 +262,11 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                         try {
                             startActivity(appIntent);
                         } catch (ActivityNotFoundException ex) {
-                            startActivity(webIntent);
+                            try {
+                                startActivity(webIntent);
+                            } catch (ActivityNotFoundException e) {
+                                Toast.makeText(DetailsActivity.this, getString(R.string.toast_no_player_available), Toast.LENGTH_LONG).show();
+                            }
                         }
                     }
                 });
@@ -332,7 +336,6 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             case MOVIE_LOADER_IS_NOT_CHECKED_ID:
                 if (data != null && data.moveToFirst()) {
                     Uri removeUri = CONTENT_URI_MOVIES.buildUpon()
-                            
                             .appendPath(mMovieId)
                             .build();
                     ContentProviderAsync cpAsync2 = new ContentProviderAsync(getContentResolver());

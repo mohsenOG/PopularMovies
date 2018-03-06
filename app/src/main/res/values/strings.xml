@@ -36,5 +36,6 @@
 
     <string name="toast_fav_added">Added successfully</string>
     <string name="toast_fav_removed">Removed successfully</string>
+    <string name="toast_no_player_available">There is no player available.</string>
 
 </resources>
