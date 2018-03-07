@@ -4,6 +4,7 @@ This app is free to use but do not forget my credit :P.
 It is uploaded for the educational purpose. It is part of the Udacity nanodegree program.
 
 NOTE: In order to work properly, please add your MovieDB api key to gradle.properties file.
+
 NOTE: It is good to use these features as well:
   - set the placeholder and error values  for picasson.
   Picasso.with(context)
