@@ -15,11 +15,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -47,19 +49,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.mohsen.popularmovies.MainActivity.*;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_MOVIE_ID;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_ORIGINAL_TITLE;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_OVERVIEW;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_POSTER_PATH;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_RELEASE_DATE;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_REVIEWS;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_TITLE;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.COLUMN_NAME_VOTE_AVERAGE;
-import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.CONTENT_URI_MOVIES;
+import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEntry.*;
 
 public class DetailsActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
 
+    private static final String SCROLL_POSITION_BUNDLE_KEY = "SCROLL_POSITION_BUNDLE_KEY";
+    private static final String REVIEW_TEXT_TRIM_BUNDLE_KEY = "REVIEW_TEXT_TRIM_BUNDLE_KEY";
     private static final String MOVIE_ID_EXTRA = "MOVIE_ID_EXTRA";
     private static final int MOVIE_LOADER_ID = 30;
     private static final int MOVIE_LOADER_IS_CHECKED_ID = 40;
@@ -72,6 +68,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     @BindView(R.id.tv_overview) TextView mOverviewTextView;
     @BindView(R.id.tv_reviews) ExpandableTextView mReviewTextView;
     @BindView(R.id.tbtn_favorite) ToggleButton mFavButton;
+    @BindView(R.id.sv_details_main) ScrollView mDetailsScrollView;
 
     @BindView(R.id.pb_loading_indicator) ProgressBar mLoadingIndicator;
     @BindView(R.id.tv_error_msg_display) TextView mErrorTextView;
@@ -80,8 +77,6 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
     private String mMovieId;
     private String mPosterPath;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,8 +101,35 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             showHideErrorMessage(getString(R.string.no_internet), true);
 
         initViews(info , isFav);
-
    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putIntArray(SCROLL_POSITION_BUNDLE_KEY, new int[]{ mDetailsScrollView.getScrollX(), mDetailsScrollView.getScrollY()});
+        boolean isTrimmed = mReviewTextView.getTrim();
+        outState.putBoolean(REVIEW_TEXT_TRIM_BUNDLE_KEY, isTrimmed);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // IS Review text was trimmed??
+        final boolean isTrimmed = savedInstanceState.getBoolean(REVIEW_TEXT_TRIM_BUNDLE_KEY);
+        mReviewTextView.setTrim(isTrimmed);
+        // Scroll view position
+        final int[] scrollPosition = savedInstanceState.getIntArray(SCROLL_POSITION_BUNDLE_KEY);
+        if (scrollPosition != null) {
+            mDetailsScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    DisplayMetrics dm = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(dm);
+                    mDetailsScrollView.scrollTo(scrollPosition[0], scrollPosition[1] + dm.widthPixels / 4);
+                }
+            });
+        }
+    }
 
     private void initViews(MovieInfo info, boolean isFav) {
         mParentView.setVisibility(View.INVISIBLE);

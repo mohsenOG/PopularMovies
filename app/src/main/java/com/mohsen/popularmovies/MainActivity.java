@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -43,7 +44,6 @@ import static com.mohsen.popularmovies.database.MovieDetailsContract.MovieInfoEn
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, RecyclerViewAdapter.ItemClickListener, LoaderManager.LoaderCallbacks<Cursor>
 {
-
     // Used for querying data
     private static final int ID_MOVIE_PATH_LOADER = 10;
     private static final int ID_MOVIE_INFO_LOADER = 20;
@@ -53,7 +53,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public static final String MOVIE_INFO_EXTRA = "MOVIE_INFO_EXTRA";
     public static final String MOVIE_FAV_EXTRA = "MOVIE_FAV_EXTRA";
     public static final String BUNDLE_MOVIE_INFO = "BUNDLE_MOVIE_INFO";
+    public static final String RECYCLER_VIEW_STATE = "RECYCLER_VIEW_STATE";
 
+    private Parcelable mRecyclerViewState;
     private SharedPreferences mSharedPreferences;
     private RecyclerViewAdapter mAdapter;
     @BindView(R.id.rv_posters) RecyclerView mRecyclerView;
@@ -90,6 +92,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         queryData();
         // Initiate the recycler view.
         initRecyclerView();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(RECYCLER_VIEW_STATE, mRecyclerView.getLayoutManager().onSaveInstanceState());
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        mRecyclerViewState = savedInstanceState.getParcelable(RECYCLER_VIEW_STATE);
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
@@ -163,6 +178,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    private void setRecyclerViewData(List<String> items) {
+        mAdapter.swapData(items);
+        restoreLayoutManagerPosition();
+    }
+
+    private void restoreLayoutManagerPosition() {
+        if (mRecyclerViewState != null)
+            mRecyclerView.getLayoutManager().onRestoreInstanceState(mRecyclerViewState);
+    }
+
     private void queryData() {
         mLoadingIndicator.setVisibility(View.VISIBLE);
         mRetryButton.setVisibility(View.INVISIBLE);
@@ -185,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 mResult = response.body();
                 if (mResult == null) return;
                 mPosterRelativePath = mResult.getPosterRelativePaths();
-                mAdapter.swapData(mPosterRelativePath);
+                setRecyclerViewData(mPosterRelativePath);
                 showHideErrorMassage(null, false);
             }
 
@@ -246,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 if (!mQueryType.equals(getString(R.string.pref_value_favorites))) {
                     return;
                 }
-                mAdapter.swapData(mPosterRelativePathFavorite);
+                setRecyclerViewData(mPosterRelativePathFavorite);
                 showHideErrorMassage(null, false);
                 break;
             case ID_MOVIE_INFO_LOADER:
@@ -273,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                         mPosterRelativePathFavorite.add(path);
                 }
                 if (mQueryType.equals(getString(R.string.pref_value_favorites))) {
-                    mAdapter.swapData(mPosterRelativePathFavorite);
+                    setRecyclerViewData(mPosterRelativePathFavorite);
                 }
                 break;
             case ID_MOVIE_RESCAN_AND_CLICK_LOADER:

@@ -65,6 +65,9 @@ public class ExpandableTextView extends android.support.v7.widget.AppCompatTextV
         setText();
     }
 
+    public void setTrim(boolean shouldTrim) { trim = shouldTrim; }
+    public boolean getTrim() {return trim;}
+
     private CharSequence getTrimmedText() {
         if (originalText != null && originalText.length() > trimLength) {
             SpannableStringBuilder builder = new SpannableStringBuilder(originalText, 0, trimLength + 1)
